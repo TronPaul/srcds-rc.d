@@ -1,0 +1,75 @@
+#!/bin/bash
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+
+DAEMON=srcds
+ARGS=
+
+[ -r /etc/conf.d/$DAEMON ] && . /etc/conf.d/$DAEMON
+
+PID=$(pidof -x srcds_run)
+
+as_user() {
+  su - $SRCDS_USER -c "$1"
+}
+
+srcds_start() {
+  stat_busy "Starting $DAEMON"
+  if [ -z "$PID" ] && as_user "cd $SRCDS_PATH && screen -dmS srcds ./srcds_run $ARGS" 
+  then
+    add_daemon srcds
+    stat_done
+  else
+    stat_fail
+    exit 1
+  fi
+}
+
+srcds_stop() {
+  stat_busy "Stopping $DAEMON"
+
+  [ -n "$PID" ] && kill $PID &>/dev/null
+  if [ $? = 0 ]; then
+    rm_daemon srcds
+    stat_done
+  else
+    stat_fail
+    exit 1
+  fi
+}
+
+srcds_update() {
+  stat_busy "Updating $DAEMON"
+
+  if [ -n "$PID" ] && as_user "screen -p 0 -S srcds -X eval 'quit\015'"
+  then
+    stat_done
+  else
+    if as_user "cd $STEAM_PATH && ./$STEAM_BIN -command update -game $GAME -dir $GAME_PATH"
+    then
+      stat_done
+    else
+      stat_fail
+    fi
+  fi
+}
+
+case "$1" in
+  start)
+    srcds_start
+    ;;
+  stop)
+    srcds_stop
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  update)
+    srcds_update
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|update}"
+esac

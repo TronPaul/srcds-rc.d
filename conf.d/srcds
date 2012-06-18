@@ -1,0 +1,20 @@
+# The SRCDS user
+SRCDS_USER=srcds
+
+# The path to steam
+STEAM_PATH=/var/lib/srcds
+
+# The steam binary
+STEAM_BIN=steam
+
+# The path of the game directory
+GAME_PATH=$STEAM_PATH/unpro_1
+
+# Directory srcds_run lives in
+SRCDS_PATH=$GAME_PATH/orangebox
+
+# The SRCDS game
+GAME=tf
+
+# Args to give SRCDS
+ARGS="-game $GAME -ip 50.116.29.23 +maxplayers 26 +map pl_badwater"
